@@ -16,10 +16,10 @@ var (
 )
 
 const (
-	FramePerSecond     = 60
-	MilisecondPerFrame = FramePerSecond / 1000
-	N_Points           = 9 * 9 * 9
-	FovFactor          = 640
+	FramePerSecond      = 60
+	MilisecondsPerFrame = 1000 / FramePerSecond
+	N_Points            = 9 * 9 * 9
+	FovFactor           = 640
 )
 
 type App struct {
@@ -104,8 +104,8 @@ func (a *App) ProcessInput() {
 }
 
 func (a *App) Update() {
-	timeToWait := MilisecondPerFrame - (sdl.GetTicks64() - timePreviousFrame)
-	if timeToWait > 0 && timeToWait < MilisecondPerFrame {
+	timeToWait := MilisecondsPerFrame - (sdl.GetTicks64() - timePreviousFrame)
+	if timeToWait > 0 && timeToWait <= MilisecondsPerFrame {
 		sdl.Delay(uint32(timeToWait))
 	}
 	timePreviousFrame = sdl.GetTicks64()
