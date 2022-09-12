@@ -7,12 +7,19 @@ import (
 )
 
 var (
-	N_Points        = 9 * 9 * 9
 	CubePoints      = make([]*Vec3, N_Points)
 	ProjectedPoints = make([]*Vec2, N_Points)
 	CameraPosition  = Vec3{x: 0, y: 0, z: -5}
 	CubeRotation    = Vec3{x: 0, y: 0, z: 0}
-	FovFactor       = 640
+
+	timePreviousFrame = uint64(0)
+)
+
+const (
+	FramePerSecond     = 60
+	MilisecondPerFrame = FramePerSecond / 1000
+	N_Points           = 9 * 9 * 9
+	FovFactor          = 640
 )
 
 type App struct {
@@ -97,6 +104,12 @@ func (a *App) ProcessInput() {
 }
 
 func (a *App) Update() {
+	timeToWait := MilisecondPerFrame - (sdl.GetTicks64() - timePreviousFrame)
+	if timeToWait > 0 && timeToWait < MilisecondPerFrame {
+		sdl.Delay(uint32(timeToWait))
+	}
+	timePreviousFrame = sdl.GetTicks64()
+
 	CubeRotation.x += 0.01
 	CubeRotation.y += 0.01
 	CubeRotation.z += 0.01
