@@ -1,5 +1,5 @@
 package src
 
-type Rectangle struct {
+type Triangle struct {
 	A, B, C int
 }

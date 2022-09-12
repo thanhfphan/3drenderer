@@ -8,7 +8,7 @@ import (
 
 var (
 	ProjectedPoints = []*Vec2{}
-	mesh            = &Mesh{Vertices: []*Vec3{}, Faces: []*Rectangle{}}
+	mesh            = &Mesh{Vertices: []*Vec3{}, Faces: []*Triangle{}}
 	CameraPosition  = Vec3{x: 0, y: 0, z: -5}
 	CubeRotation    = Vec3{x: 0, y: 0, z: 0}
 
@@ -82,20 +82,20 @@ func (a *App) Setup() error {
 	)
 
 	mesh.Faces = append(mesh.Faces,
-		&Rectangle{A: 1, B: 2, C: 3},
-		&Rectangle{A: 1, B: 3, C: 4},
+		&Triangle{A: 1, B: 2, C: 3},
+		&Triangle{A: 1, B: 3, C: 4},
 		//
-		&Rectangle{A: 4, B: 3, C: 6},
-		&Rectangle{A: 6, B: 3, C: 5},
+		&Triangle{A: 4, B: 3, C: 6},
+		&Triangle{A: 6, B: 3, C: 5},
 		//
-		&Rectangle{A: 8, B: 6, C: 5},
-		&Rectangle{A: 8, B: 5, C: 7},
+		&Triangle{A: 8, B: 6, C: 5},
+		&Triangle{A: 8, B: 5, C: 7},
 		//
-		&Rectangle{A: 1, B: 8, C: 7},
-		&Rectangle{A: 1, B: 7, C: 2},
+		&Triangle{A: 1, B: 8, C: 7},
+		&Triangle{A: 1, B: 7, C: 2},
 		//
-		&Rectangle{A: 6, B: 1, C: 4},
-		&Rectangle{A: 6, B: 8, C: 1},
+		&Triangle{A: 6, B: 1, C: 4},
+		&Triangle{A: 6, B: 8, C: 1},
 	)
 
 	return nil
