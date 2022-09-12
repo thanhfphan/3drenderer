@@ -1,6 +1,36 @@
 package src
 
-import "unsafe"
+import (
+	"math"
+	"unsafe"
+)
+
+func (a *App) DrawTriangle(x0, y0, x1, y1, x2, y2 float64, color uint32) {
+	a.DrawLine(x0, y0, x1, y1, color)
+	a.DrawLine(x1, y1, x2, y2, color)
+	a.DrawLine(x0, y0, x2, y2, color)
+}
+
+func (a *App) DrawLine(x0, y0, x1, y1 float64, color uint32) {
+	dx := x1 - x0
+	dy := y1 - y0
+
+	steps := math.Abs(dy)
+	if math.Abs(dx) > math.Abs(dy) {
+		steps = math.Abs(dx)
+	}
+
+	Xinc := dx / steps
+	Yinc := dy / steps
+
+	X := x0
+	Y := y0
+	for i := 0; i <= int(steps); i++ {
+		a.DrawPixel(int32(math.Round(X)), int32(math.Round(Y)), color)
+		X += Xinc // increment in x at each step
+		Y += Yinc // increment in y at each step
+	}
+}
 
 func (a *App) DrawGrid() {
 	for y := int32(0); y < a.w_height; y += 10 {

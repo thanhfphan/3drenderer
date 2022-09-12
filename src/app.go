@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	CubePoints      = make([]*Vec3, N_Points)
-	ProjectedPoints = make([]*Vec2, N_Points)
+	ProjectedPoints = []*Vec2{}
+	mesh            = &Mesh{Vertices: []*Vec3{}, Faces: []*Rectangle{}}
 	CameraPosition  = Vec3{x: 0, y: 0, z: -5}
 	CubeRotation    = Vec3{x: 0, y: 0, z: 0}
 
@@ -37,14 +37,18 @@ func (a *App) Setup() error {
 		return err
 	}
 
-	displayMode, err := sdl.GetCurrentDisplayMode(0)
+	rect, err := sdl.GetDisplayBounds(1)
+	if err != nil {
+		return err
+	}
+	displayMode, err := sdl.GetCurrentDisplayMode(1)
 	if err != nil {
 		return err
 	}
 	a.w_width = displayMode.W
 	a.w_height = displayMode.H
 
-	window, err := sdl.CreateWindow("3D Renderer", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
+	window, err := sdl.CreateWindow("3D Renderer", rect.X, rect.Y,
 		a.w_width, a.w_height, sdl.WINDOW_SHOWN)
 	if err != nil {
 		return err
@@ -66,20 +70,33 @@ func (a *App) Setup() error {
 	a.colorBufferTexture = colorBufferTexture
 	a.isRunning = true
 
-	point_count := 0
+	mesh.Vertices = append(mesh.Vertices,
+		&Vec3{-1, -1, -1}, // 1
+		&Vec3{-1, 1, -1},  // 2
+		&Vec3{1, 1, -1},   // 3
+		&Vec3{1, -1, -1},  // 4
+		&Vec3{1, 1, 1},    // 5
+		&Vec3{1, -1, 1},   // 6
+		&Vec3{-1, 1, 1},   // 7
+		&Vec3{-1, -1, 1},  // 8
+	)
 
-	for x := float64(-1); x <= 1; x += 0.25 {
-		for y := float64(-1); y <= 1; y += 0.25 {
-			for z := float64(-1); z <= 1; z += 0.25 {
-				CubePoints[point_count] = &Vec3{
-					x: x,
-					y: y,
-					z: z,
-				}
-				point_count++
-			}
-		}
-	}
+	mesh.Faces = append(mesh.Faces,
+		&Rectangle{A: 1, B: 2, C: 3},
+		&Rectangle{A: 1, B: 3, C: 4},
+		//
+		&Rectangle{A: 4, B: 3, C: 6},
+		&Rectangle{A: 6, B: 3, C: 5},
+		//
+		&Rectangle{A: 8, B: 6, C: 5},
+		&Rectangle{A: 8, B: 5, C: 7},
+		//
+		&Rectangle{A: 1, B: 8, C: 7},
+		&Rectangle{A: 1, B: 7, C: 2},
+		//
+		&Rectangle{A: 6, B: 1, C: 4},
+		&Rectangle{A: 6, B: 8, C: 1},
+	)
 
 	return nil
 }
@@ -114,18 +131,22 @@ func (a *App) Update() {
 	CubeRotation.y += 0.01
 	CubeRotation.z += 0.01
 
-	for i := 0; i < N_Points; i++ {
-		point := CubePoints[i]
-		transformPoint := point.RotateX(CubeRotation.x)
+	ProjectedPoints = []*Vec2{}
+	for _, item := range mesh.Vertices {
+		transformPoint := item.RotateX(CubeRotation.x)
 		transformPoint = transformPoint.RotateY(CubeRotation.y)
 		transformPoint = transformPoint.RotateZ(CubeRotation.z)
 
 		transformPoint.z -= CameraPosition.z
 
-		ProjectedPoints[i] = &Vec2{
+		projectdPoint := &Vec2{
 			x: float64(FovFactor) * transformPoint.x / transformPoint.z,
 			y: float64(FovFactor) * transformPoint.y / transformPoint.z,
 		}
+
+		projectdPoint.x += float64(a.w_width) / 2
+		projectdPoint.y += float64(a.w_height) / 2
+		ProjectedPoints = append(ProjectedPoints, projectdPoint)
 	}
 
 }
@@ -133,14 +154,21 @@ func (a *App) Update() {
 func (a *App) Render() {
 	a.DrawGrid()
 
-	for i := 0; i < N_Points; i++ {
+	for _, item := range ProjectedPoints {
 		a.DrawRect(
-			int32(ProjectedPoints[i].x)+(a.w_width/2),
-			int32(ProjectedPoints[i].y)+(a.w_height/2),
+			int32(item.x),
+			int32(item.y),
 			4,
 			4,
 			0xFF00FFFF,
 		)
+	}
+
+	for _, item := range mesh.Faces {
+		pA := ProjectedPoints[item.A-1]
+		pB := ProjectedPoints[item.B-1]
+		pC := ProjectedPoints[item.C-1]
+		a.DrawTriangle(pA.x, pA.y, pB.x, pB.y, pC.x, pC.y, 0xFF00FFFF)
 	}
 
 	a.RenderColorBuffer()
