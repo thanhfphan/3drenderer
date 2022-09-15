@@ -37,11 +37,21 @@ func (a *App) Setup() error {
 		return err
 	}
 
-	rect, err := sdl.GetDisplayBounds(1)
+	numMonitor, err := sdl.GetNumVideoDisplays()
 	if err != nil {
 		return err
 	}
-	displayMode, err := sdl.GetCurrentDisplayMode(1)
+
+	displayAt := 0
+	if numMonitor > 0 {
+		displayAt = 1
+	}
+
+	rect, err := sdl.GetDisplayBounds(displayAt)
+	if err != nil {
+		return err
+	}
+	displayMode, err := sdl.GetCurrentDisplayMode(displayAt)
 	if err != nil {
 		return err
 	}
