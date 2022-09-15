@@ -7,10 +7,11 @@ import (
 )
 
 var (
-	ProjectedPoints = []*Vec2{}
-	mesh            = &Mesh{Vertices: []*Vec3{}, Faces: []*Triangle{}}
-	CameraPosition  = Vec3{x: 0, y: 0, z: -5}
-	CubeRotation    = Vec3{x: 0, y: 0, z: 0}
+	Triangles = []*Triangle{}
+
+	mesh           = &Mesh{Vertices: []*Vec3{}, Faces: []*Face{}}
+	CameraPosition = Vec3{X: 0, Y: 0, Z: 0}
+	CubeRotation   = Vec3{X: 0, Y: 0, Z: 0}
 
 	timePreviousFrame = uint64(0)
 )
@@ -92,20 +93,20 @@ func (a *App) Setup() error {
 	)
 
 	mesh.Faces = append(mesh.Faces,
-		&Triangle{A: 1, B: 2, C: 3},
-		&Triangle{A: 1, B: 3, C: 4},
+		&Face{A: 1, B: 2, C: 3},
+		&Face{A: 1, B: 3, C: 4},
 		//
-		&Triangle{A: 4, B: 3, C: 6},
-		&Triangle{A: 6, B: 3, C: 5},
+		&Face{A: 4, B: 3, C: 6},
+		&Face{A: 6, B: 3, C: 5},
 		//
-		&Triangle{A: 8, B: 6, C: 5},
-		&Triangle{A: 8, B: 5, C: 7},
+		&Face{A: 8, B: 6, C: 5},
+		&Face{A: 8, B: 5, C: 7},
 		//
-		&Triangle{A: 1, B: 8, C: 7},
-		&Triangle{A: 1, B: 7, C: 2},
+		&Face{A: 1, B: 8, C: 7},
+		&Face{A: 1, B: 7, C: 2},
 		//
-		&Triangle{A: 6, B: 1, C: 4},
-		&Triangle{A: 6, B: 8, C: 1},
+		&Face{A: 6, B: 1, C: 4},
+		&Face{A: 6, B: 8, C: 1},
 	)
 
 	return nil
@@ -137,26 +138,35 @@ func (a *App) Update() {
 	}
 	timePreviousFrame = sdl.GetTicks64()
 
-	CubeRotation.x += 0.01
-	CubeRotation.y += 0.01
-	CubeRotation.z += 0.01
+	CubeRotation.X += 0.01
+	CubeRotation.Y += 0.01
+	CubeRotation.Z += 0.01
 
-	ProjectedPoints = []*Vec2{}
+	ProjectedPoints := []*Vec2{}
 	for _, item := range mesh.Vertices {
-		transformPoint := item.RotateX(CubeRotation.x)
-		transformPoint = transformPoint.RotateY(CubeRotation.y)
-		transformPoint = transformPoint.RotateZ(CubeRotation.z)
+		transformPoint := item.RotateX(CubeRotation.X)
+		transformPoint = transformPoint.RotateY(CubeRotation.Y)
+		transformPoint = transformPoint.RotateZ(CubeRotation.Z)
 
-		transformPoint.z -= CameraPosition.z
+		transformPoint.Z += 5
 
 		projectdPoint := &Vec2{
-			x: float64(FovFactor) * transformPoint.x / transformPoint.z,
-			y: float64(FovFactor) * transformPoint.y / transformPoint.z,
+			X: float64(FovFactor) * transformPoint.X / transformPoint.Z,
+			Y: float64(FovFactor) * transformPoint.Y / transformPoint.Z,
 		}
 
-		projectdPoint.x += float64(a.w_width) / 2
-		projectdPoint.y += float64(a.w_height) / 2
+		projectdPoint.X += float64(a.w_width) / 2
+		projectdPoint.Y += float64(a.w_height) / 2
 		ProjectedPoints = append(ProjectedPoints, projectdPoint)
+	}
+
+	Triangles = []*Triangle{}
+	for _, item := range mesh.Faces {
+		Triangles = append(Triangles, &Triangle{
+			A: ProjectedPoints[item.A-1],
+			B: ProjectedPoints[item.B-1],
+			C: ProjectedPoints[item.C-1],
+		})
 	}
 
 }
@@ -164,21 +174,8 @@ func (a *App) Update() {
 func (a *App) Render() {
 	a.DrawGrid()
 
-	for _, item := range ProjectedPoints {
-		a.DrawRect(
-			int32(item.x),
-			int32(item.y),
-			4,
-			4,
-			0xFF00FFFF,
-		)
-	}
-
-	for _, item := range mesh.Faces {
-		pA := ProjectedPoints[item.A-1]
-		pB := ProjectedPoints[item.B-1]
-		pC := ProjectedPoints[item.C-1]
-		a.DrawTriangle(pA.x, pA.y, pB.x, pB.y, pC.x, pC.y, 0xFF00FFFF)
+	for _, item := range Triangles {
+		a.DrawTriangle(item.A.X, item.A.Y, item.B.X, item.B.Y, item.C.X, item.C.Y, 0xFF00FFFF)
 	}
 
 	a.RenderColorBuffer()

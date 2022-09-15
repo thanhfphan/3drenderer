@@ -5,29 +5,29 @@ import (
 )
 
 type Vec3 struct {
-	x, y, z float64
+	X, Y, Z float64
 }
 
 func (v *Vec3) RotateX(angle float64) *Vec3 {
 	return &Vec3{
-		x: v.x,
-		y: v.y*math.Cos(angle) - v.z*math.Sin(angle),
-		z: v.y*math.Sin(angle) + v.z*math.Cos(angle),
+		X: v.X,
+		Y: v.Y*math.Cos(angle) - v.Z*math.Sin(angle),
+		Z: v.Y*math.Sin(angle) + v.Z*math.Cos(angle),
 	}
 }
 
 func (v *Vec3) RotateY(angle float64) *Vec3 {
 	return &Vec3{
-		x: v.x*math.Cos(angle) - v.z*math.Sin(angle),
-		y: v.y,
-		z: v.x*math.Sin(angle) + v.z*math.Cos(angle),
+		X: v.X*math.Cos(angle) - v.Z*math.Sin(angle),
+		Y: v.Y,
+		Z: v.X*math.Sin(angle) + v.Z*math.Cos(angle),
 	}
 }
 
 func (v *Vec3) RotateZ(angle float64) *Vec3 {
 	return &Vec3{
-		x: v.x*math.Cos(angle) - v.y*math.Sin(angle),
-		y: v.x*math.Sin(angle) + v.y*math.Cos(angle),
-		z: v.z,
+		X: v.X*math.Cos(angle) - v.Y*math.Sin(angle),
+		Y: v.X*math.Sin(angle) + v.Y*math.Cos(angle),
+		Z: v.Z,
 	}
 }
