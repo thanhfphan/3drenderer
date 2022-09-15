@@ -10,8 +10,8 @@ var (
 	Triangles = []*Triangle{}
 
 	mesh           = &Mesh{Vertices: []*Vec3{}, Faces: []*Face{}}
-	CameraPosition = Vec3{X: 0, Y: 0, Z: 0}
-	CubeRotation   = Vec3{X: 0, Y: 0, Z: 0}
+	CameraPosition = &Vec3{X: 0, Y: 0, Z: 0}
+	CubeRotation   = &Vec3{X: 0, Y: 0, Z: 0}
 
 	timePreviousFrame = uint64(0)
 )
@@ -142,33 +142,45 @@ func (a *App) Update() {
 	CubeRotation.Y += 0.01
 	CubeRotation.Z += 0.01
 
-	ProjectedPoints := []*Vec2{}
-	for _, item := range mesh.Vertices {
-		transformPoint := item.RotateX(CubeRotation.X)
-		transformPoint = transformPoint.RotateY(CubeRotation.Y)
-		transformPoint = transformPoint.RotateZ(CubeRotation.Z)
-
-		transformPoint.Z += 5
-
-		projectdPoint := &Vec2{
-			X: float64(FovFactor) * transformPoint.X / transformPoint.Z,
-			Y: float64(FovFactor) * transformPoint.Y / transformPoint.Z,
-		}
-
-		projectdPoint.X += float64(a.w_width) / 2
-		projectdPoint.Y += float64(a.w_height) / 2
-		ProjectedPoints = append(ProjectedPoints, projectdPoint)
-	}
-
 	Triangles = []*Triangle{}
 	for _, item := range mesh.Faces {
+		// ***** Transform Vertices *****
+		ta := mesh.Vertices[item.A-1].Rotate(CubeRotation)
+		ta.Z += 5
+		tb := mesh.Vertices[item.B-1].Rotate(CubeRotation)
+		tb.Z += 5
+		tc := mesh.Vertices[item.C-1].Rotate(CubeRotation)
+		tc.Z += 5
+
+		//  ***** Projection *******
+		// A
+		projectA := &Vec3{
+			X: float64(FovFactor) * ta.X / ta.Z,
+			Y: float64(FovFactor) * ta.Y / ta.Z,
+		}
+		projectA.X += float64(a.w_width) / 2
+		projectA.Y += float64(a.w_height) / 2
+		// B
+		projectB := &Vec3{
+			X: float64(FovFactor) * tb.X / tb.Z,
+			Y: float64(FovFactor) * tb.Y / tb.Z,
+		}
+		projectB.X += float64(a.w_width) / 2
+		projectB.Y += float64(a.w_height) / 2
+		// C
+		projectC := &Vec3{
+			X: float64(FovFactor) * tc.X / tc.Z,
+			Y: float64(FovFactor) * tc.Y / tc.Z,
+		}
+		projectC.X += float64(a.w_width) / 2
+		projectC.Y += float64(a.w_height) / 2
+
 		Triangles = append(Triangles, &Triangle{
-			A: ProjectedPoints[item.A-1],
-			B: ProjectedPoints[item.B-1],
-			C: ProjectedPoints[item.C-1],
+			A: projectA,
+			B: projectB,
+			C: projectC,
 		})
 	}
-
 }
 
 func (a *App) Render() {

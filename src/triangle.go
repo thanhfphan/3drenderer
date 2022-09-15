@@ -1,5 +1,5 @@
 package src
 
 type Triangle struct {
-	A, B, C *Vec2
+	A, B, C *Vec3
 }
