@@ -56,14 +56,13 @@ func (v *Vec3) UnitVector() *Vec3 {
 	return result
 }
 
-func (v *Vec3) Normalize() *Vec3 {
+func (v *Vec3) Normalize() {
 	length := v.Magnitude()
 	if length != 0 {
 		v.X /= length
 		v.Y /= length
 		v.Z /= length
 	}
-	return v
 }
 
 func Vec3Add(a, b *Vec3) *Vec3 {

@@ -8,6 +8,7 @@ import (
 
 var (
 	Triangles = []*Triangle{}
+	Lines     = []*Line{}
 
 	mesh           = &Mesh{Vertices: []*Vec3{}, Faces: []*Face{}}
 	CameraPosition = &Vec3{X: 0, Y: 0, Z: 0}
@@ -24,7 +25,9 @@ const (
 )
 
 type App struct {
-	isRunning         bool
+	isRunning bool
+	isDebug   bool
+
 	w_width, w_height int32
 	window            *sdl.Window
 	renderer          *sdl.Renderer
@@ -80,34 +83,15 @@ func (a *App) Setup() error {
 	}
 	a.colorBufferTexture = colorBufferTexture
 	a.isRunning = true
+	a.isDebug = false
 
-	mesh.Vertices = append(mesh.Vertices,
-		&Vec3{-1, -1, -1}, // 1
-		&Vec3{-1, 1, -1},  // 2
-		&Vec3{1, 1, -1},   // 3
-		&Vec3{1, -1, -1},  // 4
-		&Vec3{1, 1, 1},    // 5
-		&Vec3{1, -1, 1},   // 6
-		&Vec3{-1, 1, 1},   // 7
-		&Vec3{-1, -1, 1},  // 8
-	)
+	vertices, faces, err := a.LoadOBJFile("./assets/jug/jug.obj")
+	if err != nil {
+		return err
+	}
 
-	mesh.Faces = append(mesh.Faces,
-		&Face{A: 1, B: 2, C: 3},
-		&Face{A: 1, B: 3, C: 4},
-		//
-		&Face{A: 4, B: 3, C: 6},
-		&Face{A: 6, B: 3, C: 5},
-		//
-		&Face{A: 8, B: 6, C: 5},
-		&Face{A: 8, B: 5, C: 7},
-		//
-		&Face{A: 1, B: 8, C: 7},
-		&Face{A: 1, B: 7, C: 2},
-		//
-		&Face{A: 6, B: 1, C: 4},
-		&Face{A: 6, B: 8, C: 1},
-	)
+	mesh.Vertices = vertices
+	mesh.Faces = faces
 
 	return nil
 }
@@ -126,6 +110,11 @@ func (a *App) ProcessInput() {
 			if t.Keysym.Sym == sdl.K_ESCAPE {
 				fmt.Println("Quit(ESCAPE)")
 				a.isRunning = false
+			} else if t.Keysym.Sym == sdl.K_d {
+				if t.State == sdl.RELEASED {
+					fmt.Println("Pressed d")
+					a.isDebug = !a.isDebug
+				}
 			}
 		}
 	}
@@ -143,14 +132,28 @@ func (a *App) Update() {
 	CubeRotation.Z += 0.01
 
 	Triangles = []*Triangle{}
+	Lines = []*Line{}
+
 	for _, item := range mesh.Faces {
 		// ***** Transform Vertices *****
 		ta := mesh.Vertices[item.A-1].Rotate(CubeRotation)
-		ta.Z += 5
+		ta.Z += 1
 		tb := mesh.Vertices[item.B-1].Rotate(CubeRotation)
-		tb.Z += 5
+		tb.Z += 1
 		tc := mesh.Vertices[item.C-1].Rotate(CubeRotation)
-		tc.Z += 5
+		tc.Z += 1
+
+		if a.isDebug {
+			ac := Vec3Sub(tc, ta)
+			ab := Vec3Sub(tb, ta)
+			n := Vec3Cross(ac, ab)
+			n.Normalize()
+
+			vc := Vec3Sub(CameraPosition, ta)
+			if Vec3Dot(vc, n) < 0 {
+				continue
+			}
+		}
 
 		//  ***** Projection *******
 		// A
@@ -180,6 +183,26 @@ func (a *App) Update() {
 			B: projectB,
 			C: projectC,
 		})
+
+		// //
+		// ac := Vec3Sub(tc, ta)
+		// ab := Vec3Sub(tb, ta)
+
+		// n := Vec3Cross(ac, ab)
+		// n.Normalize()
+		// scale := 0.03
+		// tn := &Vec3{ta.X + n.X*scale, ta.Y + n.Y*scale, ta.Z + ta.Z*scale}
+		// projectN := &Vec3{
+		// 	X: float64(FovFactor) * tn.X / tn.Z,
+		// 	Y: float64(FovFactor) * tn.Y / tn.Z,
+		// }
+		// projectN.X += float64(a.w_width) / 2
+		// projectN.Y += float64(a.w_height) / 2
+
+		// Lines = append(Lines, &Line{
+		// 	A: projectA,
+		// 	B: projectN,
+		// })
 	}
 }
 
@@ -188,6 +211,10 @@ func (a *App) Render() {
 
 	for _, item := range Triangles {
 		a.DrawTriangle(item.A.X, item.A.Y, item.B.X, item.B.Y, item.C.X, item.C.Y, 0xFF00FFFF)
+	}
+
+	for _, item := range Lines {
+		a.DrawLine(item.A.X, item.A.Y, item.B.X, item.B.Y, 0xFFC0CBFF)
 	}
 
 	a.RenderColorBuffer()
