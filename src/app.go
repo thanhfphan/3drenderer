@@ -8,7 +8,6 @@ import (
 
 var (
 	Triangles = []*Triangle{}
-	Lines     = []*Line{}
 
 	mesh           = &Mesh{Vertices: []*Vec3{}, Faces: []*Face{}}
 	CameraPosition = &Vec3{X: 0, Y: 0, Z: 0}
@@ -47,7 +46,7 @@ func (a *App) Setup() error {
 	}
 
 	displayAt := 0
-	if numMonitor > 0 {
+	if numMonitor > 1 {
 		displayAt = 1
 	}
 
@@ -132,16 +131,15 @@ func (a *App) Update() {
 	CubeRotation.Z += 0.01
 
 	Triangles = []*Triangle{}
-	Lines = []*Line{}
 
 	for _, item := range mesh.Faces {
 		// ***** Transform Vertices *****
 		ta := mesh.Vertices[item.A-1].Rotate(CubeRotation)
-		ta.Z += 1
+		ta.Z += 2
 		tb := mesh.Vertices[item.B-1].Rotate(CubeRotation)
-		tb.Z += 1
+		tb.Z += 2
 		tc := mesh.Vertices[item.C-1].Rotate(CubeRotation)
-		tc.Z += 1
+		tc.Z += 2
 
 		if a.isDebug {
 			ac := Vec3Sub(tc, ta)
@@ -183,26 +181,6 @@ func (a *App) Update() {
 			B: projectB,
 			C: projectC,
 		})
-
-		// //
-		// ac := Vec3Sub(tc, ta)
-		// ab := Vec3Sub(tb, ta)
-
-		// n := Vec3Cross(ac, ab)
-		// n.Normalize()
-		// scale := 0.03
-		// tn := &Vec3{ta.X + n.X*scale, ta.Y + n.Y*scale, ta.Z + ta.Z*scale}
-		// projectN := &Vec3{
-		// 	X: float64(FovFactor) * tn.X / tn.Z,
-		// 	Y: float64(FovFactor) * tn.Y / tn.Z,
-		// }
-		// projectN.X += float64(a.w_width) / 2
-		// projectN.Y += float64(a.w_height) / 2
-
-		// Lines = append(Lines, &Line{
-		// 	A: projectA,
-		// 	B: projectN,
-		// })
 	}
 }
 
@@ -211,10 +189,6 @@ func (a *App) Render() {
 
 	for _, item := range Triangles {
 		a.DrawTriangle(item.A.X, item.A.Y, item.B.X, item.B.Y, item.C.X, item.C.Y, 0xFF00FFFF)
-	}
-
-	for _, item := range Lines {
-		a.DrawLine(item.A.X, item.A.Y, item.B.X, item.B.Y, 0xFFC0CBFF)
 	}
 
 	a.RenderColorBuffer()

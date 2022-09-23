@@ -2,7 +2,6 @@ package src
 
 import (
 	"bufio"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -12,7 +11,7 @@ func (a *App) LoadOBJFile(fileName string) ([]*Vec3, []*Face, error) {
 
 	file, err := os.Open(fileName)
 	if err != nil {
-		return nil, nil, nil
+		return nil, nil, err
 	}
 	defer file.Close()
 
@@ -50,7 +49,7 @@ func (a *App) LoadOBJFile(fileName string) ([]*Vec3, []*Face, error) {
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		log.Fatalln(err)
+		return nil, nil, err
 	}
 
 	return vertices, faces, nil
