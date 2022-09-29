@@ -193,7 +193,7 @@ func (a *App) Update() {
 }
 
 func (a *App) Render() {
-	a.DrawGrid()
+	// a.DrawGrid()
 
 	sort.Slice(Triangles, func(i, j int) bool {
 		return Triangles[i].AvgDepth > Triangles[j].AvgDepth
