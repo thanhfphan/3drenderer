@@ -1,6 +1,7 @@
 package src
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -63,6 +64,10 @@ func (v *Vec3) Normalize() {
 		v.Y /= length
 		v.Z /= length
 	}
+}
+
+func (v *Vec3) ToString() string {
+	return fmt.Sprintf("(%f,%f,%f)", v.X, v.Y, v.Z)
 }
 
 func Vec3Add(a, b *Vec3) *Vec3 {

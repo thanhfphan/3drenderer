@@ -2,6 +2,7 @@ package src
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -126,8 +127,8 @@ func (a *App) Update() {
 	}
 	timePreviousFrame = sdl.GetTicks64()
 
-	CubeRotation.X += 0.01
-	CubeRotation.Y += 0.01
+	// CubeRotation.X += 0.01
+	// CubeRotation.Y += 0.01
 	CubeRotation.Z += 0.01
 
 	Triangles = []*Triangle{}
@@ -135,10 +136,13 @@ func (a *App) Update() {
 	for _, item := range mesh.Faces {
 		// ***** Transform Vertices *****
 		ta := mesh.Vertices[item.A-1].Rotate(CubeRotation)
+		ta = ta.RotateX(3.14 / 2)
 		ta.Z += 2
 		tb := mesh.Vertices[item.B-1].Rotate(CubeRotation)
+		tb = tb.RotateX(3.14 / 2)
 		tb.Z += 2
 		tc := mesh.Vertices[item.C-1].Rotate(CubeRotation)
+		tc = tc.RotateX(3.14 / 2)
 		tc.Z += 2
 
 		if a.isDebug {
@@ -158,28 +162,32 @@ func (a *App) Update() {
 		projectA := &Vec3{
 			X: float64(FovFactor) * ta.X / ta.Z,
 			Y: float64(FovFactor) * ta.Y / ta.Z,
+			Z: ta.Z,
 		}
 		projectA.X += float64(a.w_width) / 2
-		projectA.Y += float64(a.w_height) / 2
+		projectA.Y += float64(a.w_height)/2 + 200
 		// B
 		projectB := &Vec3{
 			X: float64(FovFactor) * tb.X / tb.Z,
 			Y: float64(FovFactor) * tb.Y / tb.Z,
+			Z: tb.Z,
 		}
 		projectB.X += float64(a.w_width) / 2
-		projectB.Y += float64(a.w_height) / 2
+		projectB.Y += float64(a.w_height)/2 + 200
 		// C
 		projectC := &Vec3{
 			X: float64(FovFactor) * tc.X / tc.Z,
 			Y: float64(FovFactor) * tc.Y / tc.Z,
+			Z: tc.Z,
 		}
 		projectC.X += float64(a.w_width) / 2
-		projectC.Y += float64(a.w_height) / 2
+		projectC.Y += float64(a.w_height)/2 + 200
 
 		Triangles = append(Triangles, &Triangle{
-			A: projectA,
-			B: projectB,
-			C: projectC,
+			A:        projectA,
+			B:        projectB,
+			C:        projectC,
+			AvgDepth: (projectA.Z + projectB.Z + projectC.Z) / 3,
 		})
 	}
 }
@@ -187,8 +195,13 @@ func (a *App) Update() {
 func (a *App) Render() {
 	a.DrawGrid()
 
+	sort.Slice(Triangles, func(i, j int) bool {
+		return Triangles[i].AvgDepth > Triangles[j].AvgDepth
+	})
+
 	for _, item := range Triangles {
 		a.DrawTriangle(item.A.X, item.A.Y, item.B.X, item.B.Y, item.C.X, item.C.Y, 0xFF00FFFF)
+		a.FillTriangle(*item.A, *item.B, *item.C, 0xFF808080)
 	}
 
 	a.RenderColorBuffer()

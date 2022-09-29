@@ -11,6 +11,61 @@ func (a *App) DrawTriangle(x0, y0, x1, y1, x2, y2 float64, color uint32) {
 	a.DrawLine(x0, y0, x2, y2, color)
 }
 
+func (a *App) FillTriangle(v1, v2, v3 Vec3, color uint32) {
+	if v1.Y < v2.Y {
+		v1, v2 = v2, v1
+	}
+	if v2.Y < v3.Y {
+		v2, v3 = v3, v2
+	}
+	if v1.Y < v2.Y {
+		v1, v2 = v2, v1
+	}
+
+	if v2.Y == v3.Y {
+		a.FillBottomFlatTriangle(v1, v2, v3, color)
+	} else if v1.Y == v2.Y {
+		a.FillTopFlatTriangle(v1, v2, v3, color)
+	} else {
+		v4 := Vec3{
+			X: v1.X + ((v2.Y-v1.Y)/(v3.Y-v1.Y))*(v3.X-v1.X),
+			Y: v2.Y,
+		}
+
+		a.FillBottomFlatTriangle(v1, v2, v4, color)
+		a.FillTopFlatTriangle(v2, v4, v3, color)
+	}
+
+}
+
+func (a *App) FillBottomFlatTriangle(v1, v2, v3 Vec3, color uint32) {
+	invSlope1 := (v2.X - v1.X) / (v2.Y - v1.Y)
+	invSlope2 := (v3.X - v1.X) / (v3.Y - v1.Y)
+
+	curX1 := v1.X
+	curX2 := v1.X
+
+	for i := v1.Y; i >= v2.Y; i-- {
+		a.DrawLine(curX1, i, curX2, i, color)
+		curX1 -= invSlope1
+		curX2 -= invSlope2
+	}
+}
+
+func (a *App) FillTopFlatTriangle(v1, v2, v3 Vec3, color uint32) {
+	invSlope1 := (v3.X - v1.X) / (v3.Y - v1.Y)
+	invSlope2 := (v3.X - v2.X) / (v3.Y - v1.Y)
+
+	curX1 := v3.X
+	curX2 := v3.X
+
+	for i := v3.Y; i <= v1.Y; i++ {
+		a.DrawLine(curX1, i, curX2, i, color)
+		curX1 += invSlope1
+		curX2 += invSlope2
+	}
+}
+
 func (a *App) DrawLine(x0, y0, x1, y1 float64, color uint32) {
 	dx := x1 - x0
 	dy := y1 - y0
