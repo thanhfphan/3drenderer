@@ -165,7 +165,7 @@ func (a *App) Update() {
 			Z: ta.Z,
 		}
 		projectA.X += float64(a.w_width) / 2
-		projectA.Y += float64(a.w_height)/2 + 200
+		projectA.Y += float64(a.w_height)/2 + 230
 		// B
 		projectB := &Vec3{
 			X: float64(FovFactor) * tb.X / tb.Z,
@@ -173,7 +173,7 @@ func (a *App) Update() {
 			Z: tb.Z,
 		}
 		projectB.X += float64(a.w_width) / 2
-		projectB.Y += float64(a.w_height)/2 + 200
+		projectB.Y += float64(a.w_height)/2 + 230
 		// C
 		projectC := &Vec3{
 			X: float64(FovFactor) * tc.X / tc.Z,
@@ -181,7 +181,7 @@ func (a *App) Update() {
 			Z: tc.Z,
 		}
 		projectC.X += float64(a.w_width) / 2
-		projectC.Y += float64(a.w_height)/2 + 200
+		projectC.Y += float64(a.w_height)/2 + 230
 
 		Triangles = append(Triangles, &Triangle{
 			A:        projectA,
@@ -200,8 +200,8 @@ func (a *App) Render() {
 	})
 
 	for _, item := range Triangles {
-		a.DrawTriangle(item.A.X, item.A.Y, item.B.X, item.B.Y, item.C.X, item.C.Y, 0xFF00FFFF)
 		a.FillTriangle(*item.A, *item.B, *item.C, 0xFF808080)
+		a.DrawTriangle(item.A.X, item.A.Y, item.B.X, item.B.Y, item.C.X, item.C.Y, 0xFFFFFFFF)
 	}
 
 	a.RenderColorBuffer()
