@@ -33,8 +33,8 @@ func (a *App) DrawLine(x0, y0, x1, y1 float64, color uint32) {
 }
 
 func (a *App) DrawGrid() {
-	for y := int32(0); y < a.w_height; y += 10 {
-		for x := int32(0); x < a.w_width; x += 10 {
+	for y := int32(0); y < a.w_height; y += 5 {
+		for x := int32(0); x < a.w_width; x += 5 {
 			a.colorBuffer[(a.w_width*y)+x] = 0xFF444444
 		}
 
